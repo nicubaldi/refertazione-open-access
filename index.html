@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Referti Open Access</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
       font-family: sans-serif;
@@ -72,21 +72,23 @@
   </div>
 
   <script>
-  const supabase = supabase.createClient(
-    'https://krijaqjxklcefoindaxu.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtyaWphcWp4a2xjZWZvaW5kYXh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwMDg5MTAsImV4cCI6MjA2NzU4NDkxMH0.A-YsnF236zkUeMduMb-Y4B_Atq8xeWVb3CqdLyWnFPY');
-</script>
+    const { createClient } = supabase;
+    const supabaseClient = createClient(
+      'https://krijaqjxklcefoindaxu.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtyaWphcWp4a2xjZWZvaW5kYXh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwMDg5MTAsImV4cCI6MjA2NzU4NDkxMH0.A-YsnF236zkUeMduMb-Y4B_Atq8xeWVb3CqdLyWnFPY'
+    );
+
     async function signUp() {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { error } = await supabaseClient.auth.signUp({ email, password });
       document.getElementById('authStatus').textContent = error ? error.message : 'Registrazione completata. Controlla l\'email.';
     }
 
     async function signIn() {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
       if (error) {
         document.getElementById('authStatus').textContent = error.message;
       } else {
@@ -133,12 +135,12 @@ ${testo}
 
     async function saveReport() {
       const report = document.getElementById('structuredReport').textContent;
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabaseClient.auth.getUser();
       if (!user) {
         alert('Effettua il login prima di salvare.');
         return;
       }
-      const { error } = await supabase.from('referti').insert([
+      const { error } = await supabaseClient.from('referti').insert([
         { user_id: user.id, contenuto: report }
       ]);
       if (error) {
