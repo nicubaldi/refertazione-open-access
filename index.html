@@ -5,70 +5,53 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Referti Open Access</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 20px;
-      background-color: #f4f4f4;
-    }
-    h1, h2 {
-      text-align: center;
-    }
-    textarea, input, select {
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 8px;
-      font-size: 16px;
-    }
-    textarea {
-      height: 150px;
-    }
-    button {
-      padding: 10px 20px;
-      margin-right: 10px;
-      font-size: 16px;
-    }
-    .output {
-      background-color: #fff;
-      padding: 10px;
-      border: 1px solid #ccc;
-      white-space: pre-wrap;
-    }
-  </style>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-  <h1>Referti Open Access</h1>
+<body class="bg-gray-100 text-gray-900 font-sans p-6">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-center mb-6">Referti Open Access</h1>
 
-  <div>
-    <h3>🔑 Login / Registrazione</h3>
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
-    <button onclick="signUp()">Registrati</button>
-    <button onclick="signIn()">Accedi</button>
-    <p id="authStatus"></p>
-  </div>
+    <div class="bg-white p-6 rounded shadow mb-6">
+      <h3 class="text-xl font-semibold mb-4">🔑 Login / Registrazione</h3>
+      <input type="email" id="email" placeholder="Email" class="w-full border p-2 mb-2 rounded" />
+      <input type="password" id="password" placeholder="Password" class="w-full border p-2 mb-4 rounded" />
+      <div class="space-x-2">
+        <button onclick="signUp()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Registrati</button>
+        <button onclick="signIn()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Accedi</button>
+      </div>
+      <p id="authStatus" class="mt-2 text-sm text-red-500"></p>
+    </div>
 
-  <div id="refertoForm" style="display:none">
-    <p><strong>Tipo di esame:</strong></p>
-    <select id="examType">
-      <option value="TAC">TAC</option>
-      <option value="Ecografia">Ecografia</option>
-      <option value="RMN">RMN</option>
-      <option value="RX">RX</option>
-    </select>
+    <div id="refertoForm" style="display:none" class="bg-white p-6 rounded shadow">
+      <div class="mb-4">
+        <label for="examType" class="font-semibold">Tipo di esame:</label>
+        <select id="examType" class="w-full border p-2 rounded">
+          <option value="TAC">TAC</option>
+          <option value="Ecografia">Ecografia</option>
+          <option value="RMN">RMN</option>
+          <option value="RX">RX</option>
+        </select>
+      </div>
 
-    <p><strong>Indicazione clinica:</strong></p>
-    <input type="text" id="clinicalIndication" placeholder="Inserisci indicazione clinica" />
+      <div class="mb-4">
+        <label for="clinicalIndication" class="font-semibold">Indicazione clinica:</label>
+        <input type="text" id="clinicalIndication" placeholder="Inserisci indicazione clinica" class="w-full border p-2 rounded" />
+      </div>
 
-    <p><strong>Dettatura vocale:</strong></p>
-    <button onclick="startDictation()">🎙 Avvia Dettatura</button>
-    <textarea id="transcript" placeholder="Il testo dettato apparirà qui..."></textarea>
+      <div class="mb-4">
+        <label class="font-semibold">Dettatura vocale:</label><br>
+        <button onclick="startDictation()" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 mt-2 mb-2 rounded">🎙 Avvia Dettatura</button>
+        <textarea id="transcript" placeholder="Il testo dettato apparirà qui..." class="w-full border p-2 rounded"></textarea>
+      </div>
 
-    <button onclick="generateReport()">📄 Genera Referto</button>
-    <button onclick="saveReport()">💾 Salva Referto</button>
+      <div class="space-x-2 mb-4">
+        <button onclick="generateReport()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">📄 Genera Referto</button>
+        <button onclick="saveReport()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded">💾 Salva Referto</button>
+      </div>
 
-    <h2>Referto Strutturato</h2>
-    <div class="output" id="structuredReport"></div>
+      <h2 class="text-2xl font-semibold mb-2">Referto Strutturato</h2>
+      <div class="bg-gray-50 p-4 border rounded" id="structuredReport"></div>
+    </div>
   </div>
 
   <script>
