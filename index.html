@@ -4,7 +4,36 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Referti Open Access</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">    async function loadHistory() {
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabaseClient
+        .from('referti')
+        .select('id, contenuto, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Errore caricamento storico:', error);
+        return;
+      }
+
+      const ul = document.getElementById('reportHistory');
+      ul.innerHTML = '';
+      data.forEach(r => {
+        const li = document.createElement('li');
+        li.className = 'border p-4 rounded bg-gray-50';
+        li.innerHTML = `
+          <div class="text-sm text-gray-600">${new Date(r.created_at).toLocaleString('it')}</div>
+          <pre class="mt-2 text-gray-800 whitespace-pre-wrap">${r.contenuto}</pre>
+        `;
+        ul.appendChild(li);
+      });
+
+      document.getElementById('historySection').classList.remove('hidden');
+    }
+  </script>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans p-6">
@@ -52,8 +81,14 @@
       <h2 class="text-2xl font-semibold mb-2">Referto Strutturato</h2>
       <div class="bg-gray-50 p-4 border rounded" id="structuredReport"></div>
     </div>
-  </div>
 
+    <!-- Storico Referti -->
+    <div id="historySection" class="hidden bg-white p-6 rounded shadow mt-6">
+      <h2 class="text-2xl font-semibold mb-4">🗂️ Storico Referti</h2>
+      <ul id="reportHistory" class="space-y-4"></ul>
+    </div>
+
+  </div>
   <script>
     const { createClient } = supabase;
     const supabaseClient = createClient(
@@ -72,6 +107,14 @@
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (error) {
+        document.getElementById('authStatus').textContent = error.message;
+      } else {
+        document.getElementById('authStatus').textContent = 'Accesso effettuato';
+        document.getElementById('refertoForm').style.display = 'block';
+        loadHistory();
+      }
+    } = await supabaseClient.auth.signInWithPassword({ email, password });
       if (error) {
         document.getElementById('authStatus').textContent = error.message;
       } else {
@@ -119,6 +162,20 @@ ${testo}
     async function saveReport() {
       const report = document.getElementById('structuredReport').textContent;
       const { data: { user } } = await supabaseClient.auth.getUser();
+      if (!user) {
+        alert('Effettua il login prima di salvare.');
+        return;
+      }
+      const { error } = await supabaseClient.from('referti').insert([
+        { user_id: user.id, contenuto: report }
+      ]);
+      if (error) {
+        alert('Errore salvataggio: ' + error.message);
+      } else {
+        alert('Referto salvato con successo.');
+        loadHistory();
+      }
+    } } = await supabaseClient.auth.getUser();
       if (!user) {
         alert('Effettua il login prima di salvare.');
         return;
