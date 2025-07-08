@@ -72,8 +72,10 @@
   </div>
 
   <script>
-    const supabase = supabase.createClient('https://krijaqjxklcefoindaxu.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtyaWphcWp4a2xjZWZvaW5kYXh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwMDg5MTAsImV4cCI6MjA2NzU4NDkxMH0.A-YsnF236zkUeMduMb-Y4B_Atq8xeWVb3CqdLyWnFPY');
-
+  const supabase = supabase.createClient(
+    'https://krijaqjxklcefoindaxu.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtyaWphcWp4a2xjZWZvaW5kYXh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwMDg5MTAsImV4cCI6MjA2NzU4NDkxMH0.A-YsnF236zkUeMduMb-Y4B_Atq8xeWVb3CqdLyWnFPY');
+</script>
     async function signUp() {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
