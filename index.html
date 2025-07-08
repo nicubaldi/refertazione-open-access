@@ -4,36 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Referti Open Access</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">    async function loadHistory() {
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabaseClient
-        .from('referti')
-        .select('id, contenuto, created_at')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Errore caricamento storico:', error);
-        return;
-      }
-
-      const ul = document.getElementById('reportHistory');
-      ul.innerHTML = '';
-      data.forEach(r => {
-        const li = document.createElement('li');
-        li.className = 'border p-4 rounded bg-gray-50';
-        li.innerHTML = `
-          <div class="text-sm text-gray-600">${new Date(r.created_at).toLocaleString('it')}</div>
-          <pre class="mt-2 text-gray-800 whitespace-pre-wrap">${r.contenuto}</pre>
-        `;
-        ul.appendChild(li);
-      });
-
-      document.getElementById('historySection').classList.remove('hidden');
-    }
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">async function signOut() {
+  const { error } = await supabaseClient.auth.signOut();
+  if (error) {
+    alert('Errore durante il logout: ' + error.message);
+  } else {
+    document.getElementById('authStatus').textContent = 'Logout effettuato';
+    document.getElementById('refertoForm').style.display = 'none';
+    document.getElementById('historySection').classList.add('hidden');
+  }
+}
+</script>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans p-6">
@@ -45,9 +26,10 @@
       <input type="email" id="email" placeholder="Email" class="w-full border p-2 mb-2 rounded" />
       <input type="password" id="password" placeholder="Password" class="w-full border p-2 mb-4 rounded" />
       <div class="space-x-2">
-        <button onclick="signUp()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Registrati</button>
-        <button onclick="signIn()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Accedi</button>
-      </div>
+  <button onclick="signUp()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Registrati</button>
+  <button onclick="signIn()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Accedi</button>
+  <button onclick="signOut()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Logout</button>
+</div>
       <p id="authStatus" class="mt-2 text-sm text-red-500"></p>
     </div>
 
@@ -114,32 +96,8 @@
     document.getElementById('refertoForm').style.display = 'block';
     loadHistory();
   }
-} = await supabaseClient.auth.signInWithPassword({ email, password });
-  if (error) {
-    document.getElementById('authStatus').textContent = error.message;
-  } else {
-    document.getElementById('authStatus').textContent = 'Accesso effettuato';
-    document.getElementById('refertoForm').style.display = 'block';
-    loadHistory();
-  }
-});
-      if (error) {
-        document.getElementById('authStatus').textContent = error.message;
-      } else {
-        document.getElementById('authStatus').textContent = 'Accesso effettuato';
-        document.getElementById('refertoForm').style.display = 'block';
-        loadHistory();
-      }
-    } = await supabaseClient.auth.signInWithPassword({ email, password });
-      if (error) {
-        document.getElementById('authStatus').textContent = error.message;
-      } else {
-        document.getElementById('authStatus').textContent = 'Accesso effettuato';
-        document.getElementById('refertoForm').style.display = 'block';
-      }
-    }
-
-    function startDictation() {
+}
+function startDictation() {
       const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
       recognition.lang = 'it-IT';
       recognition.interimResults = false;
@@ -191,47 +149,7 @@ ${testo}
     alert('Referto salvato con successo.');
     loadHistory();
   }
-} } = await supabaseClient.auth.getUser();
-  if (!user) {
-    alert('Effettua il login prima di salvare.');
-    return;
-  }
-  const { error } = await supabaseClient.from('referti').insert([
-    { user_id: user.id, contenuto: report }
-  ]);
-  if (error) {
-    alert('Errore salvataggio: ' + error.message);
-  } else {
-    alert('Referto salvato con successo.');
-    loadHistory();
-  }
-}      if (!user) {
-        alert('Effettua il login prima di salvare.');
-        return;
-      }
-      const { error } = await supabaseClient.from('referti').insert([
-        { user_id: user.id, contenuto: report }
-      ]);
-      if (error) {
-        alert('Errore salvataggio: ' + error.message);
-      } else {
-        alert('Referto salvato con successo.');
-        loadHistory();
-      }
-    } } = await supabaseClient.auth.getUser();
-      if (!user) {
-        alert('Effettua il login prima di salvare.');
-        return;
-      }
-      const { error } = await supabaseClient.from('referti').insert([
-        { user_id: user.id, contenuto: report }
-      ]);
-      if (error) {
-        alert('Errore salvataggio: ' + error.message);
-      } else {
-        alert('Referto salvato con successo.');
-      }
-    }
-  </script>
+}
+</script>
 </body>
 </html>
