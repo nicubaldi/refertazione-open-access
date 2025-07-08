@@ -104,9 +104,17 @@
     }
 
     async function signIn() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  if (error) {
+    document.getElementById('authStatus').textContent = error.message;
+  } else {
+    document.getElementById('authStatus').textContent = 'Accesso effettuato';
+    document.getElementById('refertoForm').style.display = 'block';
+    loadHistory();
+  }
+});
       if (error) {
         document.getElementById('authStatus').textContent = error.message;
       } else {
@@ -160,9 +168,22 @@ ${testo}
     }
 
     async function saveReport() {
-      const report = document.getElementById('structuredReport').textContent;
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      if (!user) {
+  const report = document.getElementById('structuredReport').textContent;
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) {
+    alert('Effettua il login prima di salvare.');
+    return;
+  }
+  const { error } = await supabaseClient.from('referti').insert([
+    { user_id: user.id, contenuto: report }
+  ]);
+  if (error) {
+    alert('Errore salvataggio: ' + error.message);
+  } else {
+    alert('Referto salvato con successo.');
+    loadHistory();
+  }
+}      if (!user) {
         alert('Effettua il login prima di salvare.');
         return;
       }
