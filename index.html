@@ -11,20 +11,19 @@
   <div class="max-w-4xl mx-auto">
     <h1 class="text-3xl font-bold text-center mb-6">Referti Open Access</h1>
 
-    <!-- Autenticazione -->
+    <!-- Login -->
     <div class="bg-white p-6 rounded shadow mb-6">
-      <h3 class="text-xl font-semibold mb-4">🔑 Login / Registrazione</h3>
+      <h3 class="text-xl font-semibold mb-4">🔑 Accesso</h3>
       <input type="email" id="email" placeholder="Email" class="w-full border p-2 mb-2 rounded" />
       <input type="password" id="password" placeholder="Password" class="w-full border p-2 mb-4 rounded" />
       <div class="space-x-2">
-        <button onclick="signUp()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Registrati</button>
         <button onclick="signIn()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Accedi</button>
         <button onclick="signOut()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Logout</button>
       </div>
       <p id="authStatus" class="mt-2 text-sm text-red-500"></p>
     </div>
 
-    <!-- Form Referto -->
+    <!-- Referto -->
     <div id="refertoForm" style="display:none" class="bg-white p-6 rounded shadow">
       <div class="mb-4">
         <label for="examType" class="font-semibold">Tipo di esame:</label>
@@ -71,26 +70,24 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtyaWphcWp4a2xjZWZvaW5kYXh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwMDg5MTAsImV4cCI6MjA2NzU4NDkxMH0.A-YsnF236zkUeMduMb-Y4B_Atq8xeWVb3CqdLyWnFPY'
     );
 
-async function signUp() {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
+    async function signIn() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
 
-  if (!email || !password) {
-    document.getElementById('authStatus').textContent = 'Inserisci email e password';
-    return;
-  }
+      if (!email || !password) {
+        document.getElementById('authStatus').textContent = 'Inserisci email e password';
+        return;
+      }
 
-  const { data, error } = await supabaseClient.auth.signUp({
-    email,
-    password
-  });
-
-  if (error) {
-    document.getElementById('authStatus').textContent = error.message;
-  } else {
-    document.getElementById('authStatus').textContent = 'Registrazione completata. Ora puoi accedere.';
-  }
-}
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (error) {
+        document.getElementById('authStatus').textContent = error.message;
+      } else {
+        document.getElementById('authStatus').textContent = 'Accesso effettuato';
+        document.getElementById('refertoForm').style.display = 'block';
+        loadHistory();
+      }
+    }
 
     async function signOut() {
       const { error } = await supabaseClient.auth.signOut();
@@ -185,4 +182,3 @@ ${testo}
   </script>
 </body>
 </html>
-
