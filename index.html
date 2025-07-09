@@ -3,16 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Referti Open Access</title>
+  <title>Referti Open Access con AI</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans p-6">
   <div class="max-w-4xl mx-auto">
     <h1 class="text-3xl font-bold text-center mb-6">Referti Open Access</h1>
 
-    <!-- Referto -->
     <div id="refertoForm" class="bg-white p-6 rounded shadow mb-6">
+      <!-- Selezione tipo esame -->
       <div class="mb-4">
         <label for="examType" class="font-semibold">Tipo di esame:</label>
         <select id="examType" class="w-full border p-2 rounded">
@@ -23,55 +22,65 @@
         </select>
       </div>
 
+      <!-- Indicazione clinica -->
       <div class="mb-4">
         <label for="clinicalIndication" class="font-semibold">Indicazione clinica:</label>
         <input type="text" id="clinicalIndication" placeholder="Inserisci indicazione clinica" class="w-full border p-2 rounded" />
       </div>
 
+      <!-- Dettatura vocale -->
       <div class="mb-4">
         <label class="font-semibold">Dettatura vocale:</label><br>
         <button onclick="startDictation()" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 mt-2 mb-2 rounded">🎙 Avvia Dettatura</button>
         <textarea id="transcript" placeholder="Il testo dettato apparirà qui..." class="w-full border p-2 rounded"></textarea>
       </div>
 
+      <!-- Pulsanti principali -->
       <div class="space-x-2 mb-4">
         <button onclick="generateReport()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">📄 Genera Referto</button>
         <button onclick="saveReport()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded">💾 Salva Referto</button>
       </div>
 
+      <!-- Referto generato -->
       <h2 class="text-2xl font-semibold mb-2">Referto Strutturato</h2>
-      <div class="bg-gray-50 p-4 border rounded" id="structuredReport"></div>
+      <div class="bg-gray-50 p-4 border rounded mb-4" id="structuredReport"></div>
+
+      <!-- ChatGPT -->
+      <div class="mb-4">
+        <label class="font-semibold">🔐 Chiave API OpenAI:</label>
+        <input type="password" id="openaiKey" placeholder="Inserisci la tua chiave sk-..." class="w-full border p-2 rounded mt-1" />
+      </div>
+
+      <div class="space-x-2 mb-4">
+        <button onclick="reviseWithAI()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">🧠 Migliora con AI</button>
+        <button onclick="saveAIReport()" class="bg-indigo-400 hover:bg-indigo-500 text-white px-4 py-2 rounded">💾 Salva Referto AI</button>
+      </div>
+
+      <!-- Output ChatGPT -->
+      <h2 class="text-2xl font-semibold mb-2">🧬 Referto revisionato dall’AI</h2>
+      <div id="aiReferto" class="bg-gray-100 border p-4 rounded text-sm whitespace-pre-wrap"></div>
     </div>
 
-    <!-- Storico Referti -->
-    <div id="historySection" class="bg-white p-6 rounded shadow mt-6">
-      <h2 class="text-2xl font-semibold mb-4">🗂️ Storico Referti</h2>
+    <!-- Storico referti -->
+    <div class="bg-white p-6 rounded shadow">
+      <h2 class="text-2xl font-semibold mb-4">📁 Storico Referti Salvati</h2>
       <ul id="reportHistory" class="space-y-4"></ul>
+      <button onclick="clearAllReports()" class="mt-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">🗑 Cancella Tutto</button>
     </div>
   </div>
 
-  <!-- Script -->
   <script>
-    const { createClient } = supabase;
-    const supabaseClient = createClient(
-      'https://krijaqjxklcefoindaxu.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtyaWphcWp4a2xjZWZvaW5kYXh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwMDg5MTAsImV4cCI6MjA2NzU4NDkxMH0.A-YsnF236zkUeMduMb-Y4B_Atq8xeWVb3CqdLyWnFPY'
-    );
-
     function startDictation() {
       const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
       recognition.lang = 'it-IT';
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
-
       recognition.onresult = function(event) {
         document.getElementById('transcript').value += event.results[0][0].transcript + '. ';
       };
-
       recognition.onerror = function(event) {
         alert('Errore nella dettatura: ' + event.error);
       };
-
       recognition.start();
     }
 
@@ -94,45 +103,107 @@ ${testo}
       document.getElementById('structuredReport').textContent = report;
     }
 
-    async function saveReport() {
-      const report = document.getElementById('structuredReport').textContent;
+    function saveReport() {
+      const report = document.getElementById('structuredReport').textContent.trim();
+      if (!report) return alert('Genera prima un referto.');
+      const reports = JSON.parse(localStorage.getItem('referti')) || [];
+      reports.unshift({ tipo: "manuale", contenuto: report });
+      localStorage.setItem('referti', JSON.stringify(reports));
+      loadHistory();
+    }
 
-      if (!report.trim()) {
-        alert('Genera prima un referto.');
-        return;
-      }
+    function saveAIReport() {
+      const report = document.getElementById('aiReferto').textContent.trim();
+      if (!report) return alert('Nessun referto AI da salvare.');
+      const reports = JSON.parse(localStorage.getItem('referti')) || [];
+      reports.unshift({ tipo: "AI", contenuto: report });
+      localStorage.setItem('referti', JSON.stringify(reports));
+      loadHistory();
+    }
 
-      const { error } = await supabaseClient.from('referti').insert([
-        { contenuto: report }
-      ]);
+    function loadHistory() {
+      const reports = JSON.parse(localStorage.getItem('referti')) || [];
+      const list = document.getElementById('reportHistory');
+      list.innerHTML = '';
+      reports.forEach((r, i) => {
+        const li = document.createElement('li');
+        li.classList.add('border', 'p-4', 'rounded', 'bg-gray-50', 'relative');
+        li.innerHTML = `<strong>${r.tipo === "AI" ? "🤖 Referto AI" : "📄 Referto Manuale"}</strong><br><pre>${r.contenuto}</pre>
+        <button onclick="deleteReport(${i})" class="absolute top-2 right-2 text-red-500 hover:text-red-700">✖</button>`;
+        list.appendChild(li);
+      });
+    }
 
-      if (error) {
-        alert('Errore salvataggio: ' + error.message);
-      } else {
-        alert('Referto salvato con successo.');
+    function deleteReport(index) {
+      const reports = JSON.parse(localStorage.getItem('referti')) || [];
+      reports.splice(index, 1);
+      localStorage.setItem('referti', JSON.stringify(reports));
+      loadHistory();
+    }
+
+    function clearAllReports() {
+      if (confirm('Sei sicuro di voler cancellare tutti i referti?')) {
+        localStorage.removeItem('referti');
         loadHistory();
       }
     }
 
-    async function loadHistory() {
-      const { data, error } = await supabaseClient
-        .from('referti')
-        .select('*')
-        .order('id', { ascending: false });
+    async function reviseWithAI() {
+      const key = document.getElementById('openaiKey').value.trim();
+      const referto = document.getElementById('structuredReport').textContent.trim();
+      const output = document.getElementById('aiReferto');
 
-      const list = document.getElementById('reportHistory');
-      list.innerHTML = '';
-      if (data && data.length > 0) {
-        data.forEach(item => {
-          const li = document.createElement('li');
-          li.classList.add('border', 'p-4', 'rounded', 'bg-gray-50');
-          li.textContent = item.contenuto;
-          list.appendChild(li);
+      if (!key.startsWith('sk-')) {
+        output.textContent = 'Chiave API non valida.';
+        return;
+      }
+      if (!referto) {
+        output.textContent = 'Genera prima un referto.';
+        return;
+      }
+
+      output.textContent = '🧠 Elaborazione in corso...';
+
+      const prompt = `
+Riformula e migliora il seguente referto medico. Usa terminologia radiologica adeguata, struttura chiara e concludi con:
+- una CONCLUSIONE precisa (diagnosi o sintesi clinica)
+- un SUGGERIMENTO GESTIONALE (follow-up, ulteriori indagini, trattamento, se opportuno)
+
+Testo da riformulare:
+${referto}
+`;
+
+      try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${key}`
+          },
+          body: JSON.stringify({
+            model: "gpt-4",
+            messages: [
+              { role: "system", content: "Sei un radiologo esperto che riformula e completa referti in linguaggio professionale." },
+              { role: "user", content: prompt }
+            ],
+            temperature: 0.3
+          })
         });
+
+        const data = await response.json();
+
+        if (data.choices && data.choices.length > 0) {
+          output.textContent = data.choices[0].message.content.trim();
+        } else if (data.error) {
+          output.textContent = "Errore API: " + data.error.message;
+        } else {
+          output.textContent = "Nessuna risposta valida ricevuta.";
+        }
+      } catch (err) {
+        output.textContent = "Errore di rete o API: " + err.message;
       }
     }
 
-    // Carica lo storico all’avvio
     window.onload = loadHistory;
   </script>
 </body>
