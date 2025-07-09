@@ -4,35 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Referti Open Access</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">async function signOut() {
-  const { error } = await supabaseClient.auth.signOut();
-  if (error) {
-    alert('Errore durante il logout: ' + error.message);
-  } else {
-    document.getElementById('authStatus').textContent = 'Logout effettuato';
-    document.getElementById('refertoForm').style.display = 'none';
-    document.getElementById('historySection').classList.add('hidden');
-  }
-}
-</script>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans p-6">
   <div class="max-w-4xl mx-auto">
     <h1 class="text-3xl font-bold text-center mb-6">Referti Open Access</h1>
 
+    <!-- Autenticazione -->
     <div class="bg-white p-6 rounded shadow mb-6">
       <h3 class="text-xl font-semibold mb-4">🔑 Login / Registrazione</h3>
       <input type="email" id="email" placeholder="Email" class="w-full border p-2 mb-2 rounded" />
       <input type="password" id="password" placeholder="Password" class="w-full border p-2 mb-4 rounded" />
       <div class="space-x-2">
-  <button onclick="signUp()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Registrati</button>
-  <button onclick="signIn()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Accedi</button>
-  <button onclick="signOut()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Logout</button>
-</div>
+        <button onclick="signUp()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Registrati</button>
+        <button onclick="signIn()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Accedi</button>
+        <button onclick="signOut()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Logout</button>
+      </div>
       <p id="authStatus" class="mt-2 text-sm text-red-500"></p>
     </div>
 
+    <!-- Form Referto -->
     <div id="refertoForm" style="display:none" class="bg-white p-6 rounded shadow">
       <div class="mb-4">
         <label for="examType" class="font-semibold">Tipo di esame:</label>
@@ -69,8 +61,9 @@
       <h2 class="text-2xl font-semibold mb-4">🗂️ Storico Referti</h2>
       <ul id="reportHistory" class="space-y-4"></ul>
     </div>
-
   </div>
+
+  <!-- Script -->
   <script>
     const { createClient } = supabase;
     const supabaseClient = createClient(
@@ -78,38 +71,39 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtyaWphcWp4a2xjZWZvaW5kYXh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwMDg5MTAsImV4cCI6MjA2NzU4NDkxMH0.A-YsnF236zkUeMduMb-Y4B_Atq8xeWVb3CqdLyWnFPY'
     );
 
-    async function signUp() {
+async function signUp() {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
+
+  if (!email || !password) {
+    document.getElementById('authStatus').textContent = 'Inserisci email e password';
+    return;
+  }
+
   const { data, error } = await supabaseClient.auth.signUp({
     email,
-    password,
-    options: {
-      emailRedirectTo: window.location.origin
-    }
+    password
   });
+
   if (error) {
     document.getElementById('authStatus').textContent = error.message;
   } else {
     document.getElementById('authStatus').textContent = 'Registrazione completata. Ora puoi accedere.';
   }
-} = await supabaseClient.auth.signUp({ email, password });
-      document.getElementById('authStatus').textContent = error ? error.message : 'Registrazione completata. Controlla l\'email.';
+}
+
+    async function signOut() {
+      const { error } = await supabaseClient.auth.signOut();
+      if (error) {
+        alert('Errore durante il logout: ' + error.message);
+      } else {
+        document.getElementById('authStatus').textContent = 'Logout effettuato';
+        document.getElementById('refertoForm').style.display = 'none';
+        document.getElementById('historySection').classList.add('hidden');
+      }
     }
 
-    async function signIn() {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-  if (error) {
-    document.getElementById('authStatus').textContent = error.message;
-  } else {
-    document.getElementById('authStatus').textContent = 'Accesso effettuato';
-    document.getElementById('refertoForm').style.display = 'block';
-    loadHistory();
-  }
-}
-function startDictation() {
+    function startDictation() {
       const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
       recognition.lang = 'it-IT';
       recognition.interimResults = false;
@@ -146,23 +140,49 @@ ${testo}
     }
 
     async function saveReport() {
-  const report = document.getElementById('structuredReport').textContent;
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  if (!user) {
-    alert('Effettua il login prima di salvare.');
-    return;
-  }
-  const { error } = await supabaseClient.from('referti').insert([
-    { user_id: user.id, contenuto: report }
-  ]);
-  if (error) {
-    alert('Errore salvataggio: ' + error.message);
-  } else {
-    alert('Referto salvato con successo.');
-    loadHistory();
-  }
-}
-</script>
+      const report = document.getElementById('structuredReport').textContent;
+      const { data: { user } } = await supabaseClient.auth.getUser();
+
+      if (!user) {
+        alert('Effettua il login prima di salvare.');
+        return;
+      }
+
+      const { error } = await supabaseClient.from('referti').insert([
+        { user_id: user.id, contenuto: report }
+      ]);
+
+      if (error) {
+        alert('Errore salvataggio: ' + error.message);
+      } else {
+        alert('Referto salvato con successo.');
+        loadHistory();
+      }
+    }
+
+    async function loadHistory() {
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabaseClient
+        .from('referti')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('id', { ascending: false });
+
+      const list = document.getElementById('reportHistory');
+      list.innerHTML = '';
+      if (data && data.length > 0) {
+        data.forEach(item => {
+          const li = document.createElement('li');
+          li.classList.add('border', 'p-4', 'rounded', 'bg-gray-50');
+          li.textContent = item.contenuto;
+          list.appendChild(li);
+        });
+        document.getElementById('historySection').classList.remove('hidden');
+      }
+    }
+  </script>
 </body>
 </html>
 
